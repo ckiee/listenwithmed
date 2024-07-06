@@ -8,14 +8,24 @@ use axum::{
 };
 use mpd::Client;
 use serde_json::{json, Value};
+use clap::Parser;
+
+/// a http server that replies w mpd status
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    listen_address: String,
+}
 
 #[tokio::main]
 async fn main() {
+    let args = Args::parse();
+
     tracing_subscriber::fmt::init();
 
     let app = Router::new().route("/", get(root));
 
-    let listener = tokio::net::TcpListener::bind(args().last().unwrap())
+    let listener = tokio::net::TcpListener::bind(args.listen_address)
         .await
         .unwrap();
     axum::serve(listener, app).await.unwrap();
