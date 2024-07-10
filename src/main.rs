@@ -3,12 +3,12 @@ use std::env::args;
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
-    routing::{get},
+    routing::get,
     Json, Router,
 };
+use clap::Parser;
 use mpd::Client;
 use serde_json::{json, Value};
-use clap::Parser;
 
 /// a http server that replies w mpd status
 #[derive(Parser, Debug)]
@@ -36,7 +36,23 @@ async fn root() -> Result<Json<Value>, AppError> {
 
     let song = conn.currentsong()?;
 
+    // TODO
+    // let rating = song.map(|s| conn.sticker("song", &s.file, "rating"));
+
+    let output = conn
+        .outputs()?
+        .into_iter()
+        .find(|f| f.name == "listenwithme")
+        .unwrap();
+
+    if !output.enabled {
+        return Ok(Json(json!({
+            "available": false
+        })));
+    }
+
     Ok(Json(json!({
+        "available": true,
         "status": conn.status()?,
         "playing": {
             "song": song,
