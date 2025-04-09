@@ -64,7 +64,6 @@ async fn root(
             .map_err(|_| anyhow!("unlocking state for .listeners"))?;
 
         if let Some(query) = query {
-            println!("insert");
             state.listeners.insert(query.listener_id, Instant::now());
         }
 
